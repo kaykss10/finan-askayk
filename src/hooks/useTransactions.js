@@ -41,10 +41,9 @@ export function useTransactions() {
     }
   };
 
-  const toggleStatus = async (id, currentStatus) => {
+  const toggleStatus = async (id, newStatus) => {
     try {
       setError(null);
-      const newStatus = currentStatus === 'pago' ? 'pendente' : 'pago';
       await transactionService.updateStatus(id, newStatus);
       setTransactions(prev => prev.map(t => t.id === id ? { ...t, status: newStatus } : t));
     } catch (err) {
