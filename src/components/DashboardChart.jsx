@@ -1,8 +1,9 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-
-const COLORS = ['#111827', '#10B981', '#E11D48', '#F59E0B', '#3B82F6', '#8B5CF6', '#EC4899'];
+import { useCategories } from '../hooks/useCategories';
 
 export default function DashboardChart({ transactions }) {
+  const { categories } = useCategories();
+
   const expenseData = transactions
     .filter(t => t.type === 'expense')
     .reduce((acc, t) => {
@@ -10,7 +11,12 @@ export default function DashboardChart({ transactions }) {
       if (existing) {
         existing.value += Number(t.amount);
       } else {
-        acc.push({ name: t.category, value: Number(t.amount) });
+        const category = categories.find(c => c.name === t.category);
+        acc.push({ 
+          name: t.category, 
+          value: Number(t.amount),
+          color: category?.color || '#111827'
+        });
       }
       return acc;
     }, []);
@@ -18,44 +24,48 @@ export default function DashboardChart({ transactions }) {
   if (expenseData.length === 0) {
     return (
       <div className="card h-[300px] flex items-center justify-center">
-        <p className="text-primary/40 italic text-sm">Sem dados de despesas para exibir.</p>
+        <p className="text-primary/40 italic text-sm dark:text-dark-dim">Sem dados de despesas para exibir.</p>
       </div>
     );
   }
 
   return (
     <div className="card h-[400px]">
-      <h3 className="text-lg font-bold text-primary mb-4">Despesas por Categoria</h3>
+      <h3 className="text-lg font-bold text-primary dark:text-white mb-4">Despesas por Categoria</h3>
       <ResponsiveContainer width="100%" height="90%">
         <PieChart>
           <Pie
             data={expenseData}
             cx="50%"
             cy="50%"
-            innerRadius={60}
+            innerRadius={70}
             outerRadius={100}
-            paddingAngle={5}
+            paddingAngle={8}
             dataKey="value"
+            stroke="none"
           >
             {expenseData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              <Cell key={`cell-${index}`} fill={entry.color} />
             ))}
           </Pie>
           <Tooltip 
             contentStyle={{ 
-              borderRadius: '16px', 
-              border: 'none', 
-              boxShadow: '0 10px 40px -4px rgba(17, 24, 39, 0.1)',
+              borderRadius: '20px', 
+              border: '1px solid rgba(0, 255, 0, 0.1)', 
+              boxShadow: '0 20px 40px -4px rgba(0, 0, 0, 0.4)',
               fontSize: '12px',
-              fontWeight: '600'
+              fontWeight: '700',
+              backgroundColor: '#161912',
+              color: '#D4FF9D'
             }}
+            itemStyle={{ color: '#D4FF9D' }}
             formatter={(value) => `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
           />
           <Legend 
             verticalAlign="bottom" 
             height={36}
             iconType="circle"
-            formatter={(value) => <span className="text-xs font-medium text-primary/60">{value}</span>}
+            formatter={(value) => <span className="text-[10px] font-bold uppercase tracking-wider text-primary/60 dark:text-dark-dim">{value}</span>}
           />
         </PieChart>
       </ResponsiveContainer>

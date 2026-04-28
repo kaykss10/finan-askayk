@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,29 +6,61 @@
 
 @layer base {
   body {
-    @apply bg-background text-primary font-sans antialiased dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300;
+    @apply bg-background text-primary font-sans antialiased transition-colors duration-300;
+  }
+
+  .dark body {
+    @apply bg-dark-bg text-dark-text;
+  }
+
+  h1, h2, h3, .font-headline {
+    font-family: 'Space Grotesk', sans-serif;
   }
 }
 
 @layer components {
   .card {
-    @apply bg-surface rounded-2xl shadow-soft border border-surface-dim/20 p-6 dark:bg-slate-900 dark:border-slate-800 dark:shadow-none transition-colors duration-300;
+    @apply bg-surface rounded-3xl shadow-soft border border-surface-dim/20 p-6 transition-colors duration-300;
+  }
+
+  .dark .card {
+    @apply bg-dark-surface border-dark-border shadow-none;
   }
 
   .btn {
-    @apply px-4 py-2 rounded-xl font-medium transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply px-4 py-2 rounded-2xl font-bold transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-primary {
     @apply bg-primary text-white hover:bg-primary/90;
   }
 
+  .dark .btn-primary {
+    @apply bg-dark-accent text-black hover:bg-dark-accent/90;
+  }
+
   .btn-secondary {
-    @apply bg-surface-dim/20 text-primary hover:bg-surface-dim/40 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors duration-300;
+    @apply bg-surface-dim/20 text-primary hover:bg-surface-dim/40 transition-colors duration-300;
+  }
+
+  .dark .btn-secondary {
+    @apply bg-dark-surface border border-dark-border text-dark-text hover:bg-dark-bg;
   }
 
   .input {
-    @apply w-full px-4 py-2 bg-surface-dim/10 border border-surface-dim/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary/30 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-100 dark:focus:ring-slate-700 dark:focus:border-slate-600 transition-all duration-300;
+    @apply w-full px-4 py-3 bg-surface-dim/10 border border-surface-dim/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary/30 transition-all duration-300;
+  }
+
+  .dark .input {
+    @apply bg-dark-surface border-dark-border text-dark-text focus:ring-dark-accent/20 focus:border-dark-accent/40;
+  }
+
+  .label {
+    @apply text-sm font-bold text-primary/60 mb-2 block uppercase tracking-wider;
+  }
+
+  .dark .label {
+    @apply text-dark-dim;
   }
 }
 

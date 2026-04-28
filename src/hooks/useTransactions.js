@@ -23,7 +23,8 @@ export function useTransactions() {
     try {
       setError(null);
       const data = await transactionService.create(newTransaction);
-      setTransactions(prev => [data, ...prev]);
+      // Re-fetch because create might have added multiple rows
+      await fetchTransactions();
       return true;
     } catch (err) {
       setError(err.message);
@@ -31,11 +32,27 @@ export function useTransactions() {
     }
   };
 
-  const deleteTransaction = async (id) => {
+  const updateTransaction = async (id, updates, updateAllInGroup) => {
     try {
       setError(null);
-      await transactionService.delete(id);
-      setTransactions(prev => prev.filter(t => t.id !== id));
+      await transactionService.update(id, updates, updateAllInGroup);
+      await fetchTransactions();
+      return true;
+    } catch (err) {
+      setError(err.message);
+      return false;
+    }
+  };
+
+  const deleteTransaction = async (id, groupId) => {
+    try {
+      setError(null);
+      if (groupId) {
+        await transactionService.deleteGroup(groupId);
+      } else {
+        await transactionService.delete(id);
+      }
+      await fetchTransactions();
     } catch (err) {
       setError(err.message);
     }
@@ -51,13 +68,24 @@ export function useTransactions() {
     }
   };
 
+  const syncRecurrence = useCallback(async () => {
+    try {
+      await transactionService.syncRecurringTransactions();
+      await fetchTransactions();
+    } catch (err) {
+      console.error('Recurrence sync failed:', err);
+    }
+  }, [fetchTransactions]);
+
   return {
     transactions,
     loading,
     error,
     fetchTransactions,
     addTransaction,
+    updateTransaction,
     deleteTransaction,
-    toggleStatus
+    toggleStatus,
+    syncRecurrence
   };
 }

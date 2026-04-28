@@ -31,35 +31,35 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-background">
+    <div className="min-h-screen flex items-center justify-center p-6 bg-background dark:bg-dark-bg transition-colors duration-300">
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="card max-w-md w-full p-8"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="card max-w-md w-full p-8 dark:bg-dark-surface border border-surface-dim/20 dark:border-dark-border shadow-ambient"
       >
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">M</div>
-          <h1 className="text-2xl font-bold text-primary">Minimalist Finance</h1>
-          <p className="text-primary/40 font-medium">{isLogin ? 'Bem-vindo de volta!' : 'Crie sua conta gratuita'}</p>
+        <div className="text-center mb-10">
+          <div className="w-20 h-20 bg-primary dark:bg-dark-accent rounded-[2rem] flex items-center justify-center text-white dark:text-black text-3xl font-bold mx-auto mb-6 shadow-2xl shadow-primary/20 dark:shadow-dark-accent/20">M</div>
+          <h1 className="text-3xl font-bold text-primary dark:text-white tracking-tight font-headline italic">Minimalist</h1>
+          <p className="text-primary/40 dark:text-dark-dim font-bold uppercase tracking-widest text-xs mt-2">{isLogin ? 'Bem-vindo de volta' : 'Crie sua conta'}</p>
         </div>
 
         {error && (
-          <div className="bg-danger/10 text-danger p-4 rounded-xl flex items-center gap-3 mb-6 text-sm font-medium">
+          <div className="bg-danger/10 text-danger p-4 rounded-2xl flex items-center gap-3 mb-6 text-sm font-bold border border-danger/20">
             <AlertCircle className="w-5 h-5 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="text-sm font-medium text-primary/60 mb-1 block">E-mail</label>
-            <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/40" />
+            <label className="label">E-mail</label>
+            <div className="relative group">
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary/30 group-focus-within:text-primary dark:text-dark-dim dark:group-focus-within:text-dark-accent transition-colors" />
               <input
                 required
                 type="email"
                 placeholder="seu@email.com"
-                className="input pl-11"
+                className="input pl-12"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
               />
@@ -67,14 +67,14 @@ export default function Login() {
           </div>
 
           <div>
-            <label className="text-sm font-medium text-primary/60 mb-1 block">Senha</label>
-            <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/40" />
+            <label className="label">Senha</label>
+            <div className="relative group">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary/30 group-focus-within:text-primary dark:text-dark-dim dark:group-focus-within:text-dark-accent transition-colors" />
               <input
                 required
                 type="password"
                 placeholder="••••••••"
-                className="input pl-11"
+                className="input pl-12"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
               />
@@ -84,23 +84,23 @@ export default function Login() {
           <button 
             type="submit" 
             disabled={loading}
-            className="btn btn-primary w-full py-4 flex items-center justify-center gap-2"
+            className="btn btn-primary w-full py-4 flex items-center justify-center gap-2 shadow-2xl shadow-primary/20 dark:shadow-dark-accent/20 text-lg"
           >
             {loading ? (
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <div className="w-6 h-6 border-3 border-white/30 border-t-white dark:border-black/30 dark:border-t-black rounded-full animate-spin" />
             ) : isLogin ? (
-              <><LogIn className="w-5 h-5" /> Entrar</>
+              <><LogIn className="w-6 h-6" /> Entrar</>
             ) : (
-              <><UserPlus className="w-5 h-5" /> Cadastrar</>
+              <><UserPlus className="w-6 h-6" /> Começar Agora</>
             )}
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-surface-dim/20 text-center text-sm text-primary/40">
+        <div className="mt-10 pt-8 border-t border-surface-dim/20 dark:border-dark-border text-center text-sm">
           {isLogin ? (
-            <p>Não tem uma conta? <button onClick={() => setIsLogin(false)} className="text-primary font-bold hover:underline">Cadastre-se</button></p>
+            <p className="text-primary/40 dark:text-dark-dim font-medium">Ainda não tem conta? <button onClick={() => setIsLogin(false)} className="text-primary dark:text-dark-accent font-bold hover:underline transition-all">Cadastre-se grátis</button></p>
           ) : (
-            <p>Já tem uma conta? <button onClick={() => setIsLogin(true)} className="text-primary font-bold hover:underline">Entre agora</button></p>
+            <p className="text-primary/40 dark:text-dark-dim font-medium">Já tem uma conta? <button onClick={() => setIsLogin(true)} className="text-primary dark:text-dark-accent font-bold hover:underline transition-all">Fazer login</button></p>
           )}
         </div>
       </motion.div>

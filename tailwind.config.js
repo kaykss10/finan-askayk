@@ -14,8 +14,8 @@ export default {
           foreground: '#ffffff',
         },
         success: {
-          DEFAULT: '#10B981',
-          foreground: '#ffffff',
+          DEFAULT: '#00FF00',
+          foreground: '#000000',
         },
         danger: {
           DEFAULT: '#E11D48',
@@ -24,10 +24,20 @@ export default {
         surface: {
           DEFAULT: '#ffffff',
           dim: '#d3daea',
+        },
+        // Dark Mode specific palette
+        dark: {
+          bg: '#0D0F0A',
+          surface: '#161912',
+          border: '#24281E',
+          accent: '#00FF00',
+          text: '#D4FF9D',
+          dim: '#6E7B68'
         }
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
+        headline: ['Space Grotesk', 'sans-serif'],
       },
       borderRadius: {
         'xl': '1rem',

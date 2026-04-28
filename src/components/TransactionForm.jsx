@@ -1,8 +1,16 @@
-import { useState } from 'react';
-import { X, Plus, Calendar, Tag, Hash, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Plus, Calendar, Tag, Hash, AlertCircle, Repeat, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useCategories } from '../hooks/useCategories';
 
-export default function TransactionForm({ onSubmit, isOpen, onClose }) {
+const PRESET_COLORS = [
+  '#111827', '#10B981', '#E11D48', '#F59E0B', 
+  '#3B82F6', '#8B5CF6', '#EC4899', '#06B6D4'
+];
+
+export default function TransactionForm({ onSubmit, isOpen, onClose, initialData = null }) {
+  const { categories, saveCategory } = useCategories();
+  
   const [formData, setFormData] = useState({
     name: '',
     amount: '',
@@ -11,28 +19,60 @@ export default function TransactionForm({ onSubmit, isOpen, onClose }) {
     status: 'pendente',
     installments_total: 1,
     is_fixed: false,
-    date: new Date().toISOString().split('T')[0]
+    is_recurring: false,
+    date: new Date().toISOString().split('T')[0],
+    category_color: '#111827'
   });
 
   const [error, setError] = useState('');
+  const [showColorPicker, setShowColorPicker] = useState(false);
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    if (initialData) {
+      const cat = categories.find(c => c.name === initialData.category);
+      setFormData({
+        ...initialData,
+        amount: initialData.amount.toString(),
+        category_color: cat?.color || '#111827'
+      });
+    } else {
+      setFormData({
+        name: '',
+        amount: '',
+        category: '',
+        type: 'expense',
+        status: 'pendente',
+        installments_total: 1,
+        is_fixed: false,
+        is_recurring: false,
+        date: new Date().toISOString().split('T')[0],
+        category_color: '#111827'
+      });
+    }
+  }, [initialData, isOpen, categories]);
+
+  const handleCategorySelect = (cat) => {
+    setFormData({ 
+      ...formData, 
+      category: cat.name, 
+      category_color: cat.color 
+    });
+    setShowColorPicker(false);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    // Validation
-    if (!formData.name.trim()) {
-      setError('O nome é obrigatório.');
-      return;
-    }
-    if (parseFloat(formData.amount) <= 0 || isNaN(formData.amount)) {
-      setError('O valor deve ser maior que zero.');
-      return;
-    }
-    if (!formData.category.trim()) {
-      setError('A categoria é obrigatória.');
-      return;
-    }
+    if (!formData.name.trim()) return setError('O nome é obrigatório.');
+    if (parseFloat(formData.amount) <= 0 || isNaN(formData.amount)) return setError('O valor deve ser maior que zero.');
+    if (!formData.category.trim()) return setError('A categoria é obrigatória.');
+
+    // Save category color first
+    await saveCategory({ 
+      name: formData.category.trim(), 
+      color: formData.category_color 
+    });
 
     onSubmit({ 
       ...formData, 
@@ -41,16 +81,6 @@ export default function TransactionForm({ onSubmit, isOpen, onClose }) {
       amount: parseFloat(formData.amount) 
     });
     
-    setFormData({
-      name: '',
-      amount: '',
-      category: '',
-      type: 'expense',
-      status: 'pendente',
-      installments_total: 1,
-      is_fixed: false,
-      date: new Date().toISOString().split('T')[0]
-    });
     onClose();
   };
 
@@ -63,64 +93,66 @@ export default function TransactionForm({ onSubmit, isOpen, onClose }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-primary/20 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/60 backdrop-blur-md dark:bg-dark-bg/80"
           />
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            initial={{ opacity: 0, scale: 0.9, y: 40 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-lg bg-white rounded-3xl shadow-ambient p-8"
+            exit={{ opacity: 0, scale: 0.9, y: 40 }}
+            className="relative w-full max-w-lg bg-white dark:bg-dark-surface rounded-[2.5rem] shadow-2xl p-8 md:p-10 overflow-y-auto max-h-[90vh] border border-white/10 dark:border-dark-border"
           >
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-primary">Nova Transação</h2>
-              <button onClick={onClose} className="p-2 hover:bg-surface-dim/20 rounded-full transition-colors">
-                <X className="w-5 h-5 text-primary/60" />
+            <div className="flex justify-between items-center mb-10">
+              <h2 className="text-3xl font-bold text-primary dark:text-white font-headline tracking-tight">
+                {initialData ? 'Editar Transação' : 'Nova Transação'}
+              </h2>
+              <button onClick={onClose} className="p-3 hover:bg-surface-dim/10 dark:hover:bg-dark-bg rounded-2xl transition-all">
+                <X className="w-6 h-6 text-primary/40 dark:text-dark-dim" />
               </button>
             </div>
 
             {error && (
-              <div className="bg-danger/10 text-danger p-3 rounded-xl flex items-center gap-2 mb-4 text-xs font-bold">
-                <AlertCircle className="w-4 h-4" />
+              <div className="bg-danger/10 text-danger p-4 rounded-2xl flex items-center gap-3 mb-8 text-sm font-bold border border-danger/20">
+                <AlertCircle className="w-5 h-5 shrink-0" />
                 <span>{error}</span>
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="text-sm font-medium text-primary/60 mb-1 block">Nome</label>
-                <div className="relative">
-                  <Plus className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/40" />
+                <label className="label">Nome da Transação</label>
+                <div className="relative group">
+                  <Plus className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary/30 group-focus-within:text-primary dark:text-dark-dim dark:group-focus-within:text-dark-accent transition-colors" />
                   <input
                     required
                     type="text"
                     placeholder="Ex: Aluguel, Salário..."
-                    className="input pl-11"
+                    className="input pl-12"
                     value={formData.name}
                     onChange={e => setFormData({...formData, name: e.target.value})}
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <label className="text-sm font-medium text-primary/60 mb-1 block">Valor</label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-medium text-primary/40">R$</span>
+                  <label className="label">Valor</label>
+                  <div className="relative group">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-primary/30 dark:text-dark-dim group-focus-within:text-dark-accent transition-colors">R$</span>
                     <input
                       required
                       type="number"
                       step="0.01"
                       placeholder="0,00"
-                      className="input pl-10"
+                      className="input pl-11 font-bold"
                       value={formData.amount}
                       onChange={e => setFormData({...formData, amount: e.target.value})}
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-primary/60 mb-1 block">Tipo</label>
+                  <label className="label">Tipo</label>
                   <select
-                    className="input"
+                    className="input font-bold"
                     value={formData.type}
                     onChange={e => setFormData({...formData, type: e.target.value})}
                   >
@@ -130,29 +162,68 @@ export default function TransactionForm({ onSubmit, isOpen, onClose }) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-primary/60 mb-1 block">Categoria</label>
-                  <div className="relative">
-                    <Tag className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/40" />
+              <div className="grid grid-cols-2 gap-6">
+                <div className="relative">
+                  <label className="label">Categoria</label>
+                  <div className="relative group">
+                    <div 
+                      className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full shadow-inner"
+                      style={{ backgroundColor: formData.category_color }}
+                    />
                     <input
                       required
                       type="text"
                       placeholder="Ex: Alimentação"
-                      className="input pl-11"
+                      className="input pl-12"
                       value={formData.category}
                       onChange={e => setFormData({...formData, category: e.target.value})}
+                      onFocus={() => setShowColorPicker(true)}
                     />
                   </div>
+                  
+                  {showColorPicker && (
+                    <div className="absolute top-full left-0 right-0 mt-3 p-5 bg-white dark:bg-dark-surface border border-surface-dim/20 dark:border-dark-border rounded-[2rem] shadow-2xl z-20">
+                      <div className="flex justify-between items-center mb-4">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-primary/40 dark:text-dark-dim">Sugestões</span>
+                        <button type="button" onClick={() => setShowColorPicker(false)} className="p-1 hover:bg-surface-dim/10 dark:hover:bg-dark-bg rounded-lg"><X className="w-4 h-4"/></button>
+                      </div>
+                      <div className="flex flex-wrap gap-2 mb-6">
+                        {categories.slice(0, 5).map(cat => (
+                          <button
+                            key={cat.id}
+                            type="button"
+                            onClick={() => handleCategorySelect(cat)}
+                            className="px-3 py-1.5 bg-surface-dim/5 dark:bg-dark-bg rounded-xl text-[10px] font-bold uppercase tracking-wider text-primary/60 dark:text-dark-dim hover:text-primary dark:hover:text-dark-accent transition-all"
+                          >
+                            {cat.name}
+                          </button>
+                        ))}
+                      </div>
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-primary/40 dark:text-dark-dim block mb-3">Escolher Cor</span>
+                      <div className="grid grid-cols-4 gap-3">
+                        {PRESET_COLORS.map(color => (
+                          <button
+                            key={color}
+                            type="button"
+                            onClick={() => setFormData({...formData, category_color: color})}
+                            className={`w-full aspect-square rounded-xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 ${formData.category_color === color ? 'ring-2 ring-primary ring-offset-2 dark:ring-dark-accent dark:ring-offset-dark-surface' : ''}`}
+                            style={{ backgroundColor: color }}
+                          >
+                            {formData.category_color === color && <Check className="w-4 h-4 text-white dark:text-black" />}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-primary/60 mb-1 block">Data</label>
-                  <div className="relative">
-                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/40" />
+                  <label className="label">Data</label>
+                  <div className="relative group">
+                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary/30 group-focus-within:text-primary dark:text-dark-dim dark:group-focus-within:text-dark-accent transition-colors" />
                     <input
                       required
                       type="date"
-                      className="input pl-11"
+                      className="input pl-12"
                       value={formData.date}
                       onChange={e => setFormData({...formData, date: e.target.value})}
                     />
@@ -160,56 +231,68 @@ export default function TransactionForm({ onSubmit, isOpen, onClose }) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-6">
                 <div>
-                  <label className="text-sm font-medium text-primary/60 mb-1 block">Recorrência</label>
-                  <div className="flex gap-2">
+                  <label className="label">Tipo de Lançamento</label>
+                  <div className="flex gap-3 p-1.5 bg-surface-dim/5 dark:bg-dark-bg rounded-2xl border border-surface-dim/10 dark:border-dark-border">
                     <button
                       type="button"
-                      onClick={() => setFormData({...formData, is_fixed: false})}
-                      className={`flex-1 py-2 px-3 rounded-xl border text-sm font-medium transition-all ${!formData.is_fixed ? 'bg-primary/5 border-primary/20 text-primary dark:bg-slate-800 dark:border-slate-600 dark:text-white' : 'border-surface-dim/20 text-primary/40 hover:bg-surface-dim/5 dark:border-slate-700 dark:text-slate-500'}`}
+                      onClick={() => setFormData({...formData, is_fixed: false, is_recurring: false})}
+                      className={`flex-1 py-3 px-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${!formData.is_fixed && !formData.is_recurring ? 'bg-white dark:bg-dark-accent text-primary dark:text-black shadow-sm' : 'text-primary/40 dark:text-dark-dim hover:text-primary dark:hover:text-white'}`}
                     >
-                      Parcelado
+                      Único
                     </button>
                     <button
                       type="button"
-                      onClick={() => setFormData({...formData, is_fixed: true, installments_total: 1})}
-                      className={`flex-1 py-2 px-3 rounded-xl border text-sm font-medium transition-all ${formData.is_fixed ? 'bg-primary/5 border-primary/20 text-primary dark:bg-slate-800 dark:border-slate-600 dark:text-white' : 'border-surface-dim/20 text-primary/40 hover:bg-surface-dim/5 dark:border-slate-700 dark:text-slate-500'}`}
+                      onClick={() => setFormData({...formData, is_fixed: false, is_recurring: true, installments_total: 1})}
+                      className={`flex-1 py-3 px-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${formData.is_recurring ? 'bg-white dark:bg-dark-accent text-primary dark:text-black shadow-sm' : 'text-primary/40 dark:text-dark-dim hover:text-primary dark:hover:text-white'}`}
                     >
-                      Fixo
+                      <Repeat className="w-3 h-3 inline mr-1" /> Fixo
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({...formData, is_fixed: true, is_recurring: false})}
+                      className={`flex-1 py-3 px-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${formData.is_fixed ? 'bg-white dark:bg-dark-accent text-primary dark:text-black shadow-sm' : 'text-primary/40 dark:text-dark-dim hover:text-primary dark:hover:text-white'}`}
+                    >
+                      Parcelas
                     </button>
                   </div>
                 </div>
-                {!formData.is_fixed && (
-                  <div>
-                    <label className="text-sm font-medium text-primary/60 mb-1 block">Parcelas</label>
-                    <div className="relative">
-                      <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/40" />
-                      <input
-                        type="number"
-                        min="1"
-                        className="input pl-11"
-                        value={formData.installments_total}
-                        onChange={e => setFormData({...formData, installments_total: parseInt(e.target.value)})}
-                      />
+                
+                <div className="grid grid-cols-2 gap-6">
+                  {formData.is_fixed && (
+                    <div>
+                      <label className="label">Qtd. Parcelas</label>
+                      <div className="relative group">
+                        <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary/30 group-focus-within:text-primary dark:text-dark-dim dark:group-focus-within:text-dark-accent transition-colors" />
+                        <input
+                          type="number"
+                          min="2"
+                          max="60"
+                          className="input pl-12"
+                          value={formData.installments_total}
+                          onChange={e => setFormData({...formData, installments_total: parseInt(e.target.value)})}
+                        />
+                      </div>
                     </div>
+                  )}
+                  
+                  <div className={!formData.is_fixed ? 'col-span-2' : ''}>
+                    <label className="label">Status</label>
+                    <select
+                      className="input font-bold"
+                      value={formData.status}
+                      onChange={e => setFormData({...formData, status: e.target.value})}
+                    >
+                      <option value="pendente">Pendente</option>
+                      <option value="pago">Pago / Recebido</option>
+                    </select>
                   </div>
-                )}
-                <div className={formData.is_fixed ? 'col-span-2' : ''}>
-                  <label className="text-sm font-medium text-primary/60 mb-1 block">Status</label>
-                  <select
-                    className="input"
-                    value={formData.status}
-                    onChange={e => setFormData({...formData, status: e.target.value})}
-                  >
-                    <option value="pendente">Pendente</option>
-                    <option value="pago">Pago / Recebido</option>
-                  </select>
                 </div>
               </div>
 
-              <button type="submit" className="btn btn-primary w-full py-4 mt-4 text-lg">
-                Salvar Transação
+              <button type="submit" className="btn btn-primary w-full py-5 mt-4 text-xl shadow-2xl shadow-primary/20 dark:shadow-dark-accent/20">
+                <span className="font-bold">{initialData ? 'Atualizar Transação' : 'Salvar Transação'}</span>
               </button>
             </form>
           </motion.div>
