@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import { format, startOfMonth, parseISO, isAfter, addMonths, isSameMonth } from 'date-fns';
+import { format, startOfMonth, parseISO, isAfter, isBefore, addMonths, isSameMonth, setDate } from 'date-fns';
 import { profileService } from './profileService';
 
 export const cycleService = {
@@ -64,8 +64,8 @@ export const cycleService = {
 
     if (recurring) {
       for (const t of recurring) {
-        const tDate = new Date(monthDate);
-        tDate.setDate(t.day_of_month);
+        // Use setDate from date-fns to avoid timezone shifts
+        const tDate = setDate(monthDate, t.day_of_month);
         
         await this.createIfNotExists({
           name: t.name,
@@ -75,6 +75,7 @@ export const cycleService = {
           date: format(tDate, 'yyyy-MM-dd'),
           template_id: t.id,
           template_type: 'recurring',
+          is_recurring: true,
           status: 'pendente'
         }, userId);
       }

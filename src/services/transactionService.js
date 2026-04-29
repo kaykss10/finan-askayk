@@ -46,7 +46,7 @@ export const transactionService = {
 
     // 1. If it's recurring (forever), create a template
     if (isRecurring) {
-      await supabase.from('recurring_templates').insert({
+      const { error: templateError } = await supabase.from('recurring_templates').insert({
         user_id: user.id,
         name: transaction.name,
         amount: transaction.amount,
@@ -55,13 +55,12 @@ export const transactionService = {
         day_of_month: parseISO(transaction.date).getDate(),
         category_color: transaction.category_color
       });
+      if (templateError) console.error('Erro ao criar template recorrente:', templateError);
     }
 
     // 2. If it has installments, create an installment template
-    // This allows the cycleService to manage them month by month if they are many
-    // However, for manual add, we already create the first few or all of them below
     if (installments > 1) {
-      await supabase.from('installment_templates').insert({
+      const { error: instError } = await supabase.from('installment_templates').insert({
         user_id: user.id,
         name: transaction.name,
         total_amount: transaction.amount,
@@ -71,6 +70,7 @@ export const transactionService = {
         category_color: transaction.category_color,
         start_date: transaction.date
       });
+      if (instError) console.error('Erro ao criar template de parcelas:', instError);
     }
 
     const { data, error } = await supabase
