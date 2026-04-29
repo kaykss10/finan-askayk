@@ -278,7 +278,7 @@ export default function TransactionForm({ onSubmit, isOpen, onClose, initialData
                 
                 <div className="grid grid-cols-2 gap-6">
                   {formData.is_fixed && (
-                    <div className="grid grid-cols-2 gap-6">
+                    <>
                       <div>
                         <label className="label">Qtd. Parcelas</label>
                         <div className="relative group">
@@ -288,8 +288,8 @@ export default function TransactionForm({ onSubmit, isOpen, onClose, initialData
                             min="2"
                             max="60"
                             className="input pl-12"
-                            value={formData.installments_total}
-                            onChange={e => setFormData({...formData, installments_total: parseInt(e.target.value)})}
+                            value={formData.installments_total || ''}
+                            onChange={e => setFormData({...formData, installments_total: e.target.value ? parseInt(e.target.value) : ''})}
                           />
                         </div>
                       </div>
@@ -302,15 +302,15 @@ export default function TransactionForm({ onSubmit, isOpen, onClose, initialData
                             min="1"
                             max={formData.installments_total}
                             className="input pl-12"
-                            value={formData.current_installment}
-                            onChange={e => setFormData({...formData, current_installment: parseInt(e.target.value)})}
+                            value={formData.current_installment || ''}
+                            onChange={e => setFormData({...formData, current_installment: e.target.value ? parseInt(e.target.value) : ''})}
                           />
                         </div>
                       </div>
-                    </div>
+                    </>
                   )}
                   
-                  <div className={!formData.is_fixed ? 'col-span-2' : ''}>
+                  <div className={!formData.is_fixed ? 'col-span-2' : 'col-span-2 md:col-span-1'}>
                     <label className="label">Status</label>
                     <select
                       className="input font-bold"
