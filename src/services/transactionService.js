@@ -54,7 +54,7 @@ export const transactionService = {
         name: transaction.name,
         total_amount: transaction.amount,
         total_installments: installments,
-        current_installment: 1,
+        current_installment: transaction.current_installment || 1,
         category: transaction.category,
         category_color: transaction.category_color,
         start_date: transaction.date
@@ -71,8 +71,10 @@ export const transactionService = {
     // 3. Prepare payloads with the template link
     const payloads = [];
     const baseDate = parseISO(transaction.date);
+    const startInstallment = transaction.current_installment || 1;
 
-    for (let i = 0; i < installments; i++) {
+    for (let i = 0; i <= (installments - startInstallment); i++) {
+      const currentInst = startInstallment + i;
       payloads.push({
         name: transaction.name,
         amount: transaction.amount,
@@ -80,7 +82,7 @@ export const transactionService = {
         type: transaction.type,
         status: i === 0 ? transaction.status : 'pendente',
         installments_total: installments,
-        installments_current: i + 1,
+        installments_current: currentInst,
         installment_group_id: groupId,
         is_fixed: isFixed,
         is_recurring: isRecurring,
@@ -104,7 +106,8 @@ export const transactionService = {
     const allowedColumns = [
       'name', 'amount', 'category', 'type', 'status', 
       'installments_total', 'installments_current', 
-      'installment_group_id', 'is_fixed', 'is_recurring', 'date'
+      'installment_group_id', 'is_fixed', 'is_recurring', 'date',
+      'template_id', 'template_type'
     ];
 
     const cleanUpdates = Object.keys(updates)
@@ -115,7 +118,8 @@ export const transactionService = {
       }, {});
 
     if (updateAllInGroup && updates.installment_group_id) {
-      const { error } = await supabase
+      // 1. Update all transactions in the group
+      const { error: transError } = await supabase
         .from('transactions')
         .update({
           name: cleanUpdates.name,
@@ -127,7 +131,30 @@ export const transactionService = {
         })
         .eq('installment_group_id', updates.installment_group_id);
       
-      if (error) throw new Error('Erro ao atualizar grupo de transações.');
+      if (transError) throw new Error('Erro ao atualizar grupo de transações.');
+
+      // 2. Also update the template if it exists
+      const { data: trans } = await supabase
+        .from('transactions')
+        .select('template_id, template_type')
+        .eq('id', id)
+        .single();
+
+      if (trans && trans.template_id) {
+        if (trans.template_type === 'recurring') {
+          await supabase.from('recurring_templates').update({
+            name: cleanUpdates.name,
+            amount: cleanUpdates.amount,
+            category: cleanUpdates.category
+          }).eq('id', trans.template_id);
+        } else if (trans.template_type === 'installment') {
+          await supabase.from('installment_templates').update({
+            name: cleanUpdates.name,
+            total_amount: cleanUpdates.amount,
+            category: cleanUpdates.category
+          }).eq('id', trans.template_id);
+        }
+      }
     } else {
       const { error } = await supabase
         .from('transactions')

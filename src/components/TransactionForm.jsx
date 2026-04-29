@@ -18,6 +18,7 @@ export default function TransactionForm({ onSubmit, isOpen, onClose, initialData
     type: 'expense',
     status: 'pendente',
     installments_total: 1,
+    current_installment: 1,
     is_fixed: false,
     is_recurring: false,
     date: new Date().toISOString().split('T')[0],
@@ -43,6 +44,7 @@ export default function TransactionForm({ onSubmit, isOpen, onClose, initialData
         type: 'expense',
         status: 'pendente',
         installments_total: 1,
+        current_installment: 1,
         is_fixed: false,
         is_recurring: false,
         date: new Date().toISOString().split('T')[0],
@@ -276,18 +278,34 @@ export default function TransactionForm({ onSubmit, isOpen, onClose, initialData
                 
                 <div className="grid grid-cols-2 gap-6">
                   {formData.is_fixed && (
-                    <div>
-                      <label className="label">Qtd. Parcelas</label>
-                      <div className="relative group">
-                        <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary/30 group-focus-within:text-primary dark:text-dark-dim dark:group-focus-within:text-dark-accent transition-colors" />
-                        <input
-                          type="number"
-                          min="2"
-                          max="60"
-                          className="input pl-12"
-                          value={formData.installments_total}
-                          onChange={e => setFormData({...formData, installments_total: parseInt(e.target.value)})}
-                        />
+                    <div className="grid grid-cols-2 gap-6">
+                      <div>
+                        <label className="label">Qtd. Parcelas</label>
+                        <div className="relative group">
+                          <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary/30 group-focus-within:text-primary dark:text-dark-dim dark:group-focus-within:text-dark-accent transition-colors" />
+                          <input
+                            type="number"
+                            min="2"
+                            max="60"
+                            className="input pl-12"
+                            value={formData.installments_total}
+                            onChange={e => setFormData({...formData, installments_total: parseInt(e.target.value)})}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="label">Próxima Parcela</label>
+                        <div className="relative group">
+                          <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary/30 group-focus-within:text-primary dark:text-dark-dim dark:group-focus-within:text-dark-accent transition-colors" />
+                          <input
+                            type="number"
+                            min="1"
+                            max={formData.installments_total}
+                            className="input pl-12"
+                            value={formData.current_installment}
+                            onChange={e => setFormData({...formData, current_installment: parseInt(e.target.value)})}
+                          />
+                        </div>
                       </div>
                     </div>
                   )}
