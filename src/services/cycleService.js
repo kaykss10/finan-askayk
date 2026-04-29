@@ -36,13 +36,19 @@ export const cycleService = {
   },
 
   async generateTransactionsForMonth(profile, monthStr) {
-    const monthDate = parseISO(monthStr);
-    const userId = profile.user_id;
+    let userId = profile.user_id;
+    if (!userId) {
+      const { data: { user } } = await supabase.auth.getUser();
+      userId = user?.id;
+    }
+    
+    if (!userId) return;
 
-    // 1. Generate Salary
+    const monthDate = parseISO(monthStr);
+
+    // 1. Process Salary
     if (profile.salary_amount > 0) {
-      const salaryDate = new Date(monthDate);
-      salaryDate.setDate(profile.salary_day);
+      const salaryDate = setDate(monthDate, profile.salary_day || 5);
       
       await this.createIfNotExists({
         name: 'Salário Mensal',
@@ -56,11 +62,13 @@ export const cycleService = {
     }
 
     // 2. Process Recurring Templates
-    const { data: recurring } = await supabase
+    const { data: recurring, error: recError } = await supabase
       .from('recurring_templates')
       .select('*')
       .eq('user_id', userId)
       .eq('active', true);
+
+    if (recError) console.error('Erro ao buscar templates recorrentes:', recError);
 
     if (recurring) {
       for (const t of recurring) {
@@ -82,11 +90,13 @@ export const cycleService = {
     }
 
     // 3. Process Installment Templates
-    const { data: installments } = await supabase
+    const { data: installments, error: instError } = await supabase
       .from('installment_templates')
       .select('*')
       .eq('user_id', userId)
       .eq('active', true);
+
+    if (instError) console.error('Erro ao buscar templates de parcelas:', instError);
 
     if (installments) {
       for (const t of installments) {
@@ -115,7 +125,7 @@ export const cycleService = {
   },
 
   async createIfNotExists(transaction, userId) {
-    const { data: existing } = await supabase
+    const { data: existing, error: checkError } = await supabase
       .from('transactions')
       .select('id')
       .eq('user_id', userId)
@@ -123,11 +133,22 @@ export const cycleService = {
       .eq('date', transaction.date)
       .limit(1);
 
+    if (checkError) {
+      console.error('Erro ao verificar existência de transação:', checkError);
+      return;
+    }
+
     if (!existing || existing.length === 0) {
-      await supabase.from('transactions').insert({
-        ...transaction,
-        user_id: userId
-      });
+      const { error: insertError } = await supabase
+        .from('transactions')
+        .insert({
+          ...transaction,
+          user_id: userId
+        });
+      
+      if (insertError) {
+        console.error('Erro ao inserir transação automática:', insertError);
+      }
     }
   },
 
