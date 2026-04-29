@@ -91,35 +91,43 @@ export default function OnboardingFlow({ onComplete }) {
 
   return (
     <div className="fixed inset-0 z-[60] bg-white dark:bg-dark-bg flex flex-col md:flex-row">
-      {/* Sidebar - Progress */}
-      <div className="w-full md:w-80 bg-primary dark:bg-dark-surface p-8 text-white flex flex-col justify-between border-r border-surface-dim/20 dark:border-dark-border">
-        <div>
-          <div className="w-14 h-14 bg-white/10 dark:bg-dark-accent rounded-2xl flex items-center justify-center font-bold text-3xl mb-12 shadow-2xl shadow-black/20 dark:text-black">M</div>
-          <h1 className="text-3xl font-bold mb-4 font-headline italic tracking-tight">Minimalist</h1>
-          <p className="text-white/40 dark:text-dark-dim font-medium leading-relaxed">Sua nova jornada financeira começa agora.</p>
-        </div>
-
-        <div className="space-y-8 my-12">
-          {[1, 2, 3, 4].map(s => (
-            <div key={s} className={`flex items-center gap-4 transition-all duration-500 ${step >= s ? 'opacity-100 scale-100' : 'opacity-20 scale-95'}`}>
-              <div className={`w-10 h-10 rounded-full border-2 flex items-center justify-center font-bold transition-colors ${step > s ? 'bg-success border-success dark:bg-dark-accent dark:border-dark-accent dark:text-black' : step === s ? 'border-white dark:border-dark-accent dark:text-dark-accent' : 'border-white/20'}`}>
-                {step > s ? <CheckCircle2 className="w-6 h-6" /> : s}
-              </div>
-              <span className={`font-bold tracking-wide uppercase text-xs ${step === s ? 'text-white dark:text-dark-accent' : 'text-white/40'}`}>
-                {s === 1 && 'Salário'}
-                {s === 2 && 'Saldo Inicial'}
-                {s === 3 && 'Despesas'}
-                {s === 4 && 'Resumo'}
-              </span>
+      {/* Progress Sidebar */}
+      <div className="w-full md:w-80 bg-white dark:bg-dark-surface p-6 md:p-12 flex flex-col justify-between border-b md:border-b-0 md:border-r border-surface-dim/10 dark:border-dark-border shrink-0">
+        <div className="flex md:flex-col items-center md:items-start justify-between md:justify-start gap-8">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 md:w-16 md:h-16 bg-dark-accent rounded-2xl flex items-center justify-center text-black font-black text-2xl shadow-lg shadow-dark-accent/20">M</div>
+            <div className="md:hidden">
+              <h1 className="text-xl font-black text-primary dark:text-white italic tracking-tighter">Minimalist</h1>
             </div>
-          ))}
+          </div>
+          
+          <div className="hidden md:block">
+            <h1 className="text-4xl font-black text-primary dark:text-white italic tracking-tighter mb-4">Minimalist</h1>
+            <p className="text-primary/40 dark:text-dark-dim font-medium leading-relaxed">Sua nova jornada financeira começa agora.</p>
+          </div>
+
+          <div className="flex md:flex-col gap-4 md:gap-8 overflow-x-auto md:overflow-x-visible no-scrollbar py-2">
+            {[1, 2, 3, 4].map(s => (
+              <div key={s} className={`flex items-center gap-4 transition-all duration-500 ${step === s ? 'opacity-100 scale-105' : 'opacity-30'}`}>
+                <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full border-2 flex items-center justify-center font-bold text-base md:text-lg ${step === s ? 'border-dark-accent bg-dark-accent text-black shadow-lg shadow-dark-accent/20' : 'border-primary/10 dark:border-dark-dim/20 text-primary dark:text-white'}`}>
+                  {s}
+                </div>
+                <span className={`hidden md:block font-bold tracking-widest text-[10px] uppercase ${step === s ? 'text-dark-accent' : 'text-primary dark:text-dark-dim'}`}>
+                  {s === 1 && 'Salário'}
+                  {s === 2 && 'Saldo Inicial'}
+                  {s === 3 && 'Despesas'}
+                  {s === 4 && 'Resumo'}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="text-[10px] text-white/20 dark:text-dark-dim font-bold uppercase tracking-widest">© 2026 Minimalist Finance</div>
+        <div className="hidden md:block text-[10px] text-white/20 dark:text-dark-dim font-bold uppercase tracking-widest">© 2026 Minimalist Finance</div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-8 md:p-20 overflow-y-auto bg-slate-50 dark:bg-dark-bg">
+      <div className="flex-1 p-6 md:p-20 pb-32 overflow-y-auto bg-slate-50 dark:bg-dark-bg">
         <AnimatePresence mode="wait">
           {step === 1 && (
             <motion.div key="s1" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="max-w-md mx-auto space-y-10">
