@@ -3,30 +3,36 @@ import { format, startOfMonth, parseISO, isAfter, addMonths, isSameMonth } from 
 import { profileService } from './profileService';
 
 export const cycleService = {
-  async processMonthlyCycle() {
+  async processMonthlyCycle(targetDate = new Date()) {
     const profile = await profileService.getProfile();
     if (!profile || !profile.onboarding_completed) return;
 
-    const today = new Date();
-    const currentMonthStr = format(startOfMonth(today), 'yyyy-MM-dd');
+    const targetMonthStr = format(startOfMonth(targetDate), 'yyyy-MM-dd');
     const lastProcessed = profile.last_processed_month;
 
-    // If already processed current month, skip
-    if (lastProcessed && isAfter(parseISO(lastProcessed), parseISO(currentMonthStr)) || lastProcessed === currentMonthStr) {
+    // Se já processamos até o targetMonth ou depois, não precisamos fazer nada
+    if (lastProcessed && (isAfter(parseISO(lastProcessed), parseISO(targetMonthStr)) || lastProcessed === targetMonthStr)) {
+      // Mas se o targetMonth for o mês ATUAL, ainda queremos garantir que os templates estão sincronizados
+      // (caso o usuário tenha adicionado um novo template recorrente hoje)
+      if (lastProcessed === targetMonthStr) {
+        await this.generateTransactionsForMonth(profile, targetMonthStr);
+      }
       return;
     }
 
-    // Process from lastProcessed until currentMonth
-    let processingMonth = lastProcessed ? addMonths(parseISO(lastProcessed), 1) : parseISO(currentMonthStr);
+    // Processa desde o mês seguinte ao último processado até o mês alvo
+    let processingMonth = lastProcessed ? addMonths(parseISO(lastProcessed), 1) : parseISO(targetMonthStr);
     
-    while (!isAfter(processingMonth, parseISO(currentMonthStr))) {
+    while (!isAfter(processingMonth, parseISO(targetMonthStr))) {
       const monthStr = format(processingMonth, 'yyyy-MM-dd');
       await this.generateTransactionsForMonth(profile, monthStr);
       processingMonth = addMonths(processingMonth, 1);
     }
 
-    // Update profile with last processed month
-    await profileService.updateProfile({ last_processed_month: currentMonthStr });
+    // Atualiza o perfil apenas se avançamos o last_processed_month
+    if (!lastProcessed || isAfter(parseISO(targetMonthStr), parseISO(lastProcessed))) {
+      await profileService.updateProfile({ last_processed_month: targetMonthStr });
+    }
   },
 
   async generateTransactionsForMonth(profile, monthStr) {

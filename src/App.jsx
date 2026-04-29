@@ -36,19 +36,23 @@ function Dashboard() {
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
-    const init = async () => {
+    const sync = async () => {
+      await cycleService.processMonthlyCycle(currentDate);
+      await fetchTransactions();
+    };
+    sync();
+  }, [currentDate, fetchTransactions]);
+
+  useEffect(() => {
+    const initProfile = async () => {
       const userProfile = await profileService.getProfile();
       setProfile(userProfile);
-      
       if (!userProfile || !userProfile.onboarding_completed) {
         setShowOnboarding(true);
-      } else {
-        await cycleService.processMonthlyCycle();
-        await fetchTransactions();
       }
     };
-    init();
-  }, [fetchTransactions]);
+    initProfile();
+  }, []);
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter(t => isSameMonth(parseISO(t.date), currentDate));
