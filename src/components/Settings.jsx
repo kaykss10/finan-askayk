@@ -192,6 +192,30 @@ export default function Settings() {
           </button>
         </div>
       </div>
+
+      <div className="card space-y-8 p-8 border border-danger/10 bg-danger/5 dark:bg-danger/5">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div>
+            <h3 className="text-xl font-bold text-danger flex items-center gap-3">
+              <Shield className="w-6 h-6" /> 
+              Zona de Perigo
+            </h3>
+            <p className="text-sm font-medium text-danger/60 mt-1">Ao resetar, todas as suas transações e parcelas serão excluídas permanentemente.</p>
+          </div>
+          
+          <button 
+            onClick={async () => {
+              if (window.confirm('TEM CERTEZA? Isso excluirá TODAS as suas transações, parcelas e resetará seu perfil. Esta ação não pode ser desfeita.')) {
+                await profileService.resetOnboarding();
+                window.location.reload();
+              }
+            }}
+            className="btn bg-danger text-white hover:bg-danger/90 px-8 py-4 shadow-xl shadow-danger/20"
+          >
+            Resetar Onboarding e Dados
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

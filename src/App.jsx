@@ -130,6 +130,17 @@ function Dashboard() {
             <span className="font-bold tracking-wide uppercase text-xs">Ajustes</span>
           </button>
           <button 
+            onClick={async () => {
+              await cycleService.processMonthlyCycle();
+              await fetchTransactions();
+              alert('Sincronização concluída!');
+            }}
+            className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-primary/40 hover:bg-surface-dim/5 dark:text-dark-dim dark:hover:bg-dark-bg hover:scale-102 transition-all duration-300"
+          >
+            <Calendar className="w-6 h-6" />
+            <span className="font-bold tracking-wide uppercase text-xs">Sincronizar</span>
+          </button>
+          <button 
             onClick={signOut}
             className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-danger/40 hover:bg-danger/5 hover:text-danger transition-all duration-300"
           >
