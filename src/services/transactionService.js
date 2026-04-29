@@ -131,6 +131,32 @@ export const transactionService = {
   },
 
   async delete(id) {
+    // 1. Get the transaction to check for templates
+    const { data: trans } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (trans && trans.template_id) {
+      // Deactivate the template so it stops generating
+      if (trans.template_type === 'recurring') {
+        await supabase.from('recurring_templates').update({ active: false }).eq('id', trans.template_id);
+        // Also delete all future occurrences that were already generated
+        await supabase.from('transactions')
+          .delete()
+          .eq('template_id', trans.template_id)
+          .gt('date', trans.date);
+      } else if (trans.template_type === 'installment') {
+        await supabase.from('installment_templates').update({ active: false }).eq('id', trans.template_id);
+        // Also delete all future occurrences
+        await supabase.from('transactions')
+          .delete()
+          .eq('template_id', trans.template_id)
+          .gt('date', trans.date);
+      }
+    }
+
     const { error } = await supabase
       .from('transactions')
       .delete()
@@ -140,6 +166,23 @@ export const transactionService = {
   },
 
   async deleteGroup(groupId) {
+    // 1. Get one transaction from the group to check for template
+    const { data: trans } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('installment_group_id', groupId)
+      .limit(1)
+      .single();
+
+    if (trans && trans.template_id) {
+      await supabase.from('installment_templates').update({ active: false }).eq('id', trans.template_id);
+      // Delete future ones
+      await supabase.from('transactions')
+        .delete()
+        .eq('template_id', trans.template_id)
+        .gt('date', trans.date);
+    }
+
     const { error } = await supabase
       .from('transactions')
       .delete()
