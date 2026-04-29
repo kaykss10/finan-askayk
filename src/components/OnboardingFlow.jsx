@@ -211,29 +211,32 @@ export default function OnboardingFlow({ onComplete }) {
                 </div>
                 <h2 className="text-4xl font-bold text-primary dark:text-white font-headline">Possui parcelas ativas?</h2>
                 <p className="text-primary/40 dark:text-dark-dim font-medium text-lg">Cartão de crédito, carro, empréstimos... Adicione para não esquecer.</p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-8 bg-white dark:bg-dark-surface rounded-[2.5rem] shadow-ambient border border-surface-dim/20 dark:border-dark-border">
-                <div className="col-span-2">
+                 <div className="flex flex-col gap-6 p-6 md:p-8 bg-white dark:bg-dark-surface rounded-[2rem] md:rounded-[2.5rem] shadow-ambient border border-surface-dim/20 dark:border-dark-border">
+                <div>
                   <label className="label">Nome da Despesa</label>
-                  <input type="text" className="input" placeholder="Ex: iPhone 15" value={newInst.name} onChange={e => setNewInst({ ...newInst, name: e.target.value })} />
+                  <input type="text" className="input" placeholder="Ex: Notebook" value={newInst.name} onChange={e => setNewInst({ ...newInst, name: e.target.value })} />
                 </div>
-                <div>
-                  <label className="label">Valor Total</label>
-                  <input type="text" className="input" placeholder="0,00" value={newInst.total_amount} onChange={e => setNewInst({ ...newInst, total_amount: e.target.value })} />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="label">Valor Total</label>
+                    <input type="text" className="input" placeholder="0,00" value={newInst.total_amount} onChange={e => setNewInst({ ...newInst, total_amount: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="label">Total de Parcelas</label>
+                    <input type="number" className="input" placeholder="12" value={newInst.total_installments} onChange={e => setNewInst({ ...newInst, total_installments: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="label">Próxima Parcela</label>
+                    <input type="number" className="input" placeholder="1" value={newInst.current_installment} onChange={e => setNewInst({ ...newInst, current_installment: e.target.value })} />
+                  </div>
+                  <div className="flex items-end">
+                    <button onClick={addInstallment} className="btn btn-primary w-full py-4 text-base dark:shadow-dark-accent/10 flex items-center justify-center">
+                      <Plus className="w-5 h-5 mr-2" /> Adicionar Parcela
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <label className="label">Total de Parcelas</label>
-                  <input type="number" className="input" placeholder="12" value={newInst.total_installments} onChange={e => setNewInst({ ...newInst, total_installments: e.target.value })} />
-                </div>
-                <div>
-                  <label className="label">Próxima Parcela</label>
-                  <input type="number" className="input" placeholder="1" value={newInst.current_installment} onChange={e => setNewInst({ ...newInst, current_installment: e.target.value })} />
-                </div>
-                <button onClick={addInstallment} className="btn btn-primary self-end py-4 text-base dark:shadow-dark-accent/10">
-                  <Plus className="w-5 h-5 mr-2" /> Adicionar Parcela
-                </button>
               </div>
+             </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {data.installments.map(inst => (
