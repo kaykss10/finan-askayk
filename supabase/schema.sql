@@ -79,10 +79,10 @@ DROP POLICY IF EXISTS "Users can manage their own profile" ON user_financial_pro
 CREATE POLICY "Users can manage their own profile" ON user_financial_profile FOR ALL USING (auth.uid() = user_id);
 
 DROP POLICY IF EXISTS "Users can manage their own recurring templates" ON recurring_templates;
-CREATE POLICY "Users can manage their own recurring templates" ON recurring_templates FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage their own recurring templates" ON recurring_templates FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 DROP POLICY IF EXISTS "Users can manage their own installment templates" ON installment_templates;
-CREATE POLICY "Users can manage their own installment templates" ON installment_templates FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage their own installment templates" ON installment_templates FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 -- Indices
 CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id);

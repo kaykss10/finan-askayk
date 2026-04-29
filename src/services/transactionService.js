@@ -52,7 +52,7 @@ export const transactionService = {
         amount: transaction.amount,
         type: transaction.type,
         category: transaction.category,
-        day_of_month: parseISO(transaction.date).getDate(),
+        day_of_month: parseInt(transaction.date.split('-')[2]),
         category_color: transaction.category_color
       });
       if (templateError) console.error('Erro ao criar template recorrente:', templateError);
