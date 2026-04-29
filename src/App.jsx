@@ -284,6 +284,11 @@ function Dashboard() {
         isOpen={isFormOpen} 
         onClose={() => { setIsFormOpen(false); setEditingTransaction(null); }} 
         onSubmit={handleAddOrEdit} 
+        onDelete={editingTransaction ? () => {
+          handleDeleteTransaction(editingTransaction.id, editingTransaction.installment_group_id);
+          setIsFormOpen(false);
+          setEditingTransaction(null);
+        } : null}
         initialData={editingTransaction}
       />
     </div>

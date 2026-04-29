@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Plus, Calendar, Tag, Hash, AlertCircle, Repeat, Check } from 'lucide-react';
+import { X, Plus, Calendar, Tag, Hash, AlertCircle, Repeat, Check, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCategories } from '../hooks/useCategories';
 
@@ -8,7 +8,7 @@ const PRESET_COLORS = [
   '#3B82F6', '#8B5CF6', '#EC4899', '#06B6D4'
 ];
 
-export default function TransactionForm({ onSubmit, isOpen, onClose, initialData = null }) {
+export default function TransactionForm({ onSubmit, isOpen, onClose, initialData = null, onDelete = null }) {
   const { categories, saveCategory } = useCategories();
   
   const [formData, setFormData] = useState({
@@ -306,9 +306,22 @@ export default function TransactionForm({ onSubmit, isOpen, onClose, initialData
                 </div>
               </div>
 
-              <button type="submit" className="btn btn-primary w-full py-5 mt-4 text-xl shadow-2xl shadow-primary/20 dark:shadow-dark-accent/20">
-                <span className="font-bold">{initialData ? 'Atualizar Transação' : 'Salvar Transação'}</span>
-              </button>
+              <div className="flex flex-col gap-4">
+                <button type="submit" className="btn btn-primary w-full py-5 mt-4 text-xl shadow-2xl shadow-primary/20 dark:shadow-dark-accent/20">
+                  <span className="font-bold">{initialData ? 'Atualizar Transação' : 'Salvar Transação'}</span>
+                </button>
+
+                {initialData && onDelete && (
+                  <button 
+                    type="button" 
+                    onClick={onDelete}
+                    className="w-full py-4 bg-danger/5 hover:bg-danger/10 text-danger rounded-3xl font-bold transition-all flex items-center justify-center gap-2 border border-danger/10"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                    Excluir Transação
+                  </button>
+                )}
+              </div>
             </form>
           </motion.div>
         </div>
