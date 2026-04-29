@@ -218,7 +218,7 @@ export default function OnboardingFlow({ onComplete }) {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="label">Valor Total</label>
+                    <label className="label">Valor da Parcela</label>
                     <input type="text" className="input" placeholder="0,00" value={newInst.total_amount} onChange={e => setNewInst({ ...newInst, total_amount: e.target.value })} />
                   </div>
                   <div>

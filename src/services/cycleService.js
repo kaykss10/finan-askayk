@@ -96,7 +96,7 @@ export const cycleService = {
           
           await this.createIfNotExists({
             name: `${t.name} (${instNum}/${t.total_installments})`,
-            amount: t.total_amount / t.total_installments,
+            amount: t.total_amount,
             category: t.category,
             type: 'expense',
             date: format(monthDate, 'yyyy-MM-dd'),
