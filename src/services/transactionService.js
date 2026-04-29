@@ -41,6 +41,38 @@ export const transactionService = {
       });
     }
 
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Usuário não autenticado.');
+
+    // 1. If it's recurring (forever), create a template
+    if (isRecurring) {
+      await supabase.from('recurring_templates').insert({
+        user_id: user.id,
+        name: transaction.name,
+        amount: transaction.amount,
+        type: transaction.type,
+        category: transaction.category,
+        day_of_month: parseISO(transaction.date).getDate(),
+        category_color: transaction.category_color
+      });
+    }
+
+    // 2. If it has installments, create an installment template
+    // This allows the cycleService to manage them month by month if they are many
+    // However, for manual add, we already create the first few or all of them below
+    if (installments > 1) {
+      await supabase.from('installment_templates').insert({
+        user_id: user.id,
+        name: transaction.name,
+        total_amount: transaction.amount,
+        total_installments: installments,
+        current_installment: 1,
+        category: transaction.category,
+        category_color: transaction.category_color,
+        start_date: transaction.date
+      });
+    }
+
     const { data, error } = await supabase
       .from('transactions')
       .insert(payloads)

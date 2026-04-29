@@ -59,6 +59,7 @@ export const cycleService = {
     const { data: recurring } = await supabase
       .from('recurring_templates')
       .select('*')
+      .eq('user_id', userId)
       .eq('active', true);
 
     if (recurring) {
@@ -83,6 +84,7 @@ export const cycleService = {
     const { data: installments } = await supabase
       .from('installment_templates')
       .select('*')
+      .eq('user_id', userId)
       .eq('active', true);
 
     if (installments) {
