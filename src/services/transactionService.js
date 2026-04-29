@@ -21,7 +21,54 @@ export const transactionService = {
     const isFixed = transaction.is_fixed || false;
     const isRecurring = transaction.is_recurring || false;
     const groupId = installments > 1 ? crypto.randomUUID() : null;
-    
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Usuário não autenticado.');
+
+    let templateId = null;
+    let templateType = null;
+
+    // 1. If it's recurring (forever), create a template
+    if (isRecurring) {
+      const { data: tData, error: templateError } = await supabase.from('recurring_templates').insert({
+        user_id: user.id,
+        name: transaction.name,
+        amount: transaction.amount,
+        type: transaction.type,
+        category: transaction.category,
+        day_of_month: parseInt(transaction.date.split('-')[2]),
+        category_color: transaction.category_color
+      }).select().single();
+      
+      if (templateError) {
+        console.error('Erro ao criar template recorrente:', templateError);
+      } else {
+        templateId = tData.id;
+        templateType = 'recurring';
+      }
+    }
+
+    // 2. If it has installments, create an installment template
+    if (installments > 1) {
+      const { data: tData, error: instError } = await supabase.from('installment_templates').insert({
+        user_id: user.id,
+        name: transaction.name,
+        total_amount: transaction.amount,
+        total_installments: installments,
+        current_installment: 1,
+        category: transaction.category,
+        category_color: transaction.category_color,
+        start_date: transaction.date
+      }).select().single();
+      
+      if (instError) {
+        console.error('Erro ao criar template de parcelas:', instError);
+      } else {
+        templateId = tData.id;
+        templateType = 'installment';
+      }
+    }
+
+    // 3. Prepare payloads with the template link
     const payloads = [];
     const baseDate = parseISO(transaction.date);
 
@@ -37,40 +84,10 @@ export const transactionService = {
         installment_group_id: groupId,
         is_fixed: isFixed,
         is_recurring: isRecurring,
+        template_id: templateId,
+        template_type: templateType,
         date: format(addMonths(baseDate, i), 'yyyy-MM-dd')
       });
-    }
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Usuário não autenticado.');
-
-    // 1. If it's recurring (forever), create a template
-    if (isRecurring) {
-      const { error: templateError } = await supabase.from('recurring_templates').insert({
-        user_id: user.id,
-        name: transaction.name,
-        amount: transaction.amount,
-        type: transaction.type,
-        category: transaction.category,
-        day_of_month: parseInt(transaction.date.split('-')[2]),
-        category_color: transaction.category_color
-      });
-      if (templateError) console.error('Erro ao criar template recorrente:', templateError);
-    }
-
-    // 2. If it has installments, create an installment template
-    if (installments > 1) {
-      const { error: instError } = await supabase.from('installment_templates').insert({
-        user_id: user.id,
-        name: transaction.name,
-        total_amount: transaction.amount,
-        total_installments: installments,
-        current_installment: 1,
-        category: transaction.category,
-        category_color: transaction.category_color,
-        start_date: transaction.date
-      });
-      if (instError) console.error('Erro ao criar template de parcelas:', instError);
     }
 
     const { data, error } = await supabase
