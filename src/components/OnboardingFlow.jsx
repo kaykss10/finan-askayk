@@ -106,10 +106,10 @@ export default function OnboardingFlow({ onComplete }) {
             <p className="text-primary/40 dark:text-dark-dim font-medium leading-relaxed">Sua nova jornada financeira começa agora.</p>
           </div>
 
-          <div className="flex md:flex-col gap-4 md:gap-8 overflow-x-auto md:overflow-x-visible no-scrollbar py-2">
+          <div className="flex flex-row md:flex-col gap-4 md:gap-8 overflow-x-auto md:overflow-x-visible no-scrollbar py-2 w-full justify-center md:justify-start">
             {[1, 2, 3, 4].map(s => (
-              <div key={s} className={`flex items-center gap-4 transition-all duration-500 ${step === s ? 'opacity-100 scale-105' : 'opacity-30'}`}>
-                <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full border-2 flex items-center justify-center font-bold text-base md:text-lg ${step === s ? 'border-dark-accent bg-dark-accent text-black shadow-lg shadow-dark-accent/20' : 'border-primary/10 dark:border-dark-dim/20 text-primary dark:text-white'}`}>
+              <div key={s} className={`flex items-center gap-3 transition-all duration-500 ${step === s ? 'opacity-100 scale-105' : 'opacity-30'}`}>
+                <div className={`w-8 h-8 md:w-12 md:h-12 rounded-full border-2 flex items-center justify-center font-bold text-xs md:text-lg ${step === s ? 'border-dark-accent bg-dark-accent text-black shadow-lg shadow-dark-accent/20' : 'border-primary/10 dark:border-dark-dim/20 text-primary dark:text-white'}`}>
                   {s}
                 </div>
                 <span className={`hidden md:block font-bold tracking-widest text-[10px] uppercase ${step === s ? 'text-dark-accent' : 'text-primary dark:text-dark-dim'}`}>
