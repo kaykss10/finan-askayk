@@ -74,14 +74,29 @@ export default function TransactionForm({ onSubmit, isOpen, onClose, initialData
       color: formData.category_color 
     });
 
-    onSubmit({ 
-      ...formData, 
-      name: formData.name.trim(),
-      category: formData.category.trim(),
-      amount: parseFloat(formData.amount) 
-    });
-    
-    onClose();
+    try {
+      await onSubmit({ 
+        ...formData, 
+        name: formData.name.trim(),
+        category: formData.category.trim(),
+        amount: parseFloat(formData.amount) 
+      });
+      
+      // Force immediate cycle sync after adding a recurring/fixed item
+      if (formData.is_recurring || formData.is_fixed) {
+        try {
+          const { cycleService } = await import('../services/cycleService');
+          const { parseISO } = await import('date-fns');
+          await cycleService.processMonthlyCycle(parseISO(formData.date));
+        } catch (syncErr) {
+          console.error('Erro na sincronização pós-venda:', syncErr);
+        }
+      }
+      
+      onClose();
+    } catch (err) {
+      console.error('Erro ao salvar:', err);
+    }
   };
 
   return (

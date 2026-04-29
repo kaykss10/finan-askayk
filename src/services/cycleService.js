@@ -10,13 +10,11 @@ export const cycleService = {
     const targetMonthStr = format(startOfMonth(targetDate), 'yyyy-MM-dd');
     const lastProcessed = profile.last_processed_month;
 
-    // Se já processamos até o targetMonth ou depois, não precisamos fazer nada
+    // Sempre processamos o targetMonthStr para garantir que novos templates sejam capturados
+    await this.generateTransactionsForMonth(profile, targetMonthStr);
+
+    // Se já processamos até o targetMonth ou depois, não precisamos fazer o loop de meses passados
     if (lastProcessed && (isAfter(parseISO(lastProcessed), parseISO(targetMonthStr)) || lastProcessed === targetMonthStr)) {
-      // Mas se o targetMonth for o mês ATUAL, ainda queremos garantir que os templates estão sincronizados
-      // (caso o usuário tenha adicionado um novo template recorrente hoje)
-      if (lastProcessed === targetMonthStr) {
-        await this.generateTransactionsForMonth(profile, targetMonthStr);
-      }
       return;
     }
 
